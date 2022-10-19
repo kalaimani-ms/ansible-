@@ -1,0 +1,50 @@
+---
+- name: install tomcat ,change port, start
+  hosts: tomcat_server
+  become: yes
+  tasks:
+    - name: update cache and install packages
+      apt:
+        pkg:
+          - python3
+          - unzip
+          - net-tools
+          - openjdk-8-jre-headless
+        update_cache: yes
+        cache_valid_time: 3600
+      tags:
+        - pkg
+    - name: download and extract tomcat
+      get_url:
+        url:  https://dlcdn.apache.org/tomcat/tomcat-10/v10.0.23/bin/apache-tomcat-10.0.23.zip
+        dest: /opt/
+      tags:
+        - download
+    - name: extract tomcat
+      unarchive:
+        src: /opt/apache-tomcat-10.0.23.zip
+        dest: /opt/
+        remote_src: yes
+      tags:
+        - unzip
+    
+- name: start and verify tomcat
+  hosts: tomcat_server
+  become: yes
+  tasks:
+    - name: change to the tomcat  dir
+      chdir: /opt/apache-tomcat-10.0.23/bin/
+      tags:
+        - dir 
+    - name :  start tomcat
+      command: ./startup.sh
+      tags:
+        - start
+    - name: check with netstat
+      shell:  netstat -lnpt
+      register: app_status
+      tags:
+        - status
+    - debug: msg={{app_status.stdout_lines}}
+      tags: 
+        - netstat

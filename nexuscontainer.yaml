@@ -1,0 +1,68 @@
+---
+- name: Install python ,Docker, Docker compose,start docker, add docker group
+  hosts: Docker_Server
+  become: yes
+  tasks:  
+    - name:  install packages
+      apt:
+        pkg:
+          - python3
+          - docker
+          - docker-compose
+        update_cache: yes
+        cache_valid_time:  3600
+    - name: make sure  docker is running
+      systemd:
+        name: docker
+        state: started
+      tags:
+        - daemon  
+    - name: add ubuntu to groups docker
+      user:
+        name: ubuntu
+        groups: docker
+        append: yes
+      tags:
+        - group
+    - name: reconnect to server session 
+      meta: reset_connection
+      tags:
+        - reset
+        
+- name: pulling Nexus image from  docker hub
+  hosts: Docker_Server
+  tasks:
+    - name: docker pull nexus
+      docker_image: 
+        name: sonatype/nexus3
+        state: present
+        tag: latest
+    - name: start container nexus
+      docker_container:
+        name: nexus_container
+        image: sonatype/nexus3
+        state: started
+        restart: yes
+        ports:
+          - "8081:8081"
+      tags:
+        - present
+    - name: remove nexus container
+      docker_container:
+        name:  nexus_container
+        state: absent
+      tags:
+        - absent
+
+- name: docker login  nexus
+  hosts: Docker_Server
+  vars-files:
+    - project_vars
+  tasks:
+    - name:  docker login nexus
+      docker_login:  
+        registry-url: https://nexus3.onap.org/
+        username: kalaimani
+        password: "{{nexus_password}}"
+      tags:
+        - login 
