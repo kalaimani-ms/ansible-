@@ -1,0 +1,5 @@
+# ignore variables 
+roles/start_containers/defaults/*
+roles/start_containers/vars/*
+project_vars
+*.tfstate

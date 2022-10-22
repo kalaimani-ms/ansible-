@@ -1,0 +1,13 @@
+---
+- name: deploy app  to kss cluster in new namespace
+  hosts: localhost
+  connection: local
+  tasks:
+    - name: creating new namespace for k8s cluster
+      k8s:
+        name: kalaiapp
+        api_version: v1
+        kind: Namespace
+        state: present
+        kubeconfig: /home/kalai/.kube/config
+

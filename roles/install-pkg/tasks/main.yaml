@@ -1,0 +1,57 @@
+- name: updating apt repo, cache ,install docker,python3-pip
+  apt:
+    update_cache: yes
+    cache_valid_time: 3600
+    pkg:
+     - docker.io
+     - python3-pip
+
+- name: get status of docker-compose
+  stat:
+    path: /usr/local/bin/docker-compose
+  register: stat_result
+- debug: msg={{stat_result}}
+
+- name: download docker compose
+  get_url:
+    url:  https://github.com/docker/compose/releases/download/v2.10.0/docker-compose-linux-x86_64
+    dest: /usr/local/bin/docker-compose
+    mode: '0755'
+  when: not stat_result.stat.exists
+  tags:
+    - download
+
+- name: make sure  docker is running
+  systemd:
+    name: docker
+    state: started
+  tags:
+    - daemon  
+
+- name: add ubuntu user to groups docker
+  user:
+    name: ubuntu
+    groups: docker
+    append: yes
+  tags:
+    - group
+
+- name: reconnect to server session 
+  meta: reset_connection
+  tags:
+    - reset
+
+- name: install python library module for docker
+  pip:
+    name: 
+    - docker
+    - docker-compose
+  tags:
+    - pip
+
+- name: copy docker compose file from local to ec2-server
+  copy:
+    src:  docker-compose.yaml
+    dest: /home/ubuntu/
+  tags:
+    - copy

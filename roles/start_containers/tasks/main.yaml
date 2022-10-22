@@ -1,0 +1,14 @@
+- name: Docker login
+  docker_login:
+    registry_url: https://index.docker.io/v1/
+    username: kalaimanims
+    password: "{{password}}" 
+  tags:
+    - login
+
+- name: run the containers by docker compose yaml file
+  docker_compose:
+    project_src: /home/ubuntu/
+    state: present
+  tags:
+    - dockerrun
