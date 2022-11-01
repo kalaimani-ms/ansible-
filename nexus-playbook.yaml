@@ -1,6 +1,6 @@
 ---
 
-- name: Ensure ssh port is open and instance Fully initalized
+- name: Ensure ssh port is opened and instance Fully initalized
   hosts: all
   gather_facts: false
   tasks:
